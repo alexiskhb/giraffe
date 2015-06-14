@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  Spin, StdCtrls, Buttons;
+  Spin, StdCtrls, Buttons, Menus;
 
 const
   DefaultLineWidth = 1;
@@ -60,9 +60,6 @@ type
   end;
 
   TMainForm = class(TForm)
-	    bbClear: TBitBtn;
-	    procedure bbClearClick(Sender: TObject);
-	    procedure FormResize(Sender: TObject);
   public
     FSM: TDetermFigureFSM;
   published
@@ -74,6 +71,12 @@ type
     pnlColorSize: TPanel;
     spinSize: TSpinEdit;
     bmPicture: TBitmap;
+    bbClear: TBitBtn;
+    bbSave: TBitBtn;
+    SaveDialog: TSaveDialog;
+    procedure bbClearClick(Sender: TObject);
+    procedure bbSaveClick(Sender: TObject);
+    procedure FormResize(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure pbPictureMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
@@ -192,9 +195,13 @@ begin
   FStartPoint := APoint;
   FColor := AColor;
   case ADirection of
+    dRightUp: FEndPoint := Point(APoint.X + DirectLength, APoint.Y - DirectLength);
     dRight: FEndPoint := Point(APoint.X + DirectLength, APoint.Y);
+    dRightDown: FEndPoint := Point(APoint.X + DirectLength, APoint.Y + DirectLength);
     dDown: FEndPoint := Point(APoint.X, APoint.Y + DirectLength);
+    dLeftDown: FEndPoint := Point(APoint.X - DirectLength, APoint.Y + DirectLength);
     dLeft: FEndPoint := Point(APoint.X - DirectLength, APoint.Y);
+    dLeftUp: FEndPoint := Point(APoint.X - DirectLength, APoint.Y - DirectLength);
     dUp: FEndPoint := Point(APoint.X, APoint.Y - DirectLength);
     else FEndPoint := APoint;
   end;
@@ -212,6 +219,12 @@ procedure TMainForm.bbClearClick(Sender: TObject);
 begin
   bmPicture.Canvas.FillRect(0, 0, Width, Height);
   pbPicture.Invalidate;
+end;
+
+procedure TMainForm.bbSaveClick(Sender: TObject);
+begin
+  if SaveDialog.Execute then
+    bmPicture.SaveToFile(SaveDialog.FileName + '.bmp');
 end;
 
 procedure TMainForm.FormResize(Sender: TObject);
@@ -240,11 +253,14 @@ end;
 procedure TMainForm.pbPictureMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
-  LastMemoString: string;
+  MemoString: string;
+  i: integer;
 begin
-  LastMemoString := memoText.Lines[memoText.Lines.Count - 1];
-  if (Length(LastMemoString) > 0) and (LastMemoString[Length(LastMemoString) - 1] <> ' ') then
-    memoText.Lines.Text := memoText.Lines.Text + '  ';
+  for i := 0 to memoText.Lines.Count - 1 do begin;
+    MemoString := memoText.Lines[i];
+    if (Length(MemoString) > 0) and (MemoString[Length(MemoString) - 1] <> ' ') then
+      memoText.Lines[i] := MemoString + '  ';
+  end;
   DrawFigure(Point(X, Y), cbColor.ButtonColor, spinSize.Value);
 end;
 
