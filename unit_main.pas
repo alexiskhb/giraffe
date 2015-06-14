@@ -8,11 +8,38 @@ uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
   Spin, StdCtrls;
 
+const
+  DefaultLineWidth = 1;
+  BoldLineWidth = 2;
+  {DFFSM = Determ Figure Finite-State Machine}
+  DFFSMSize = 6;
+
 type
 
   { TMainForm }
 
-  TDirection = (ru, r, rd, d, ld, l, lu, u);
+  TDirection = (dNone, dRightUp, dRight, dRightDown, dDown, dLeftDown, dLeft, dLeftUp, dUp);
+
+  TDetermFigureFSMAdjMatrix  = array [0..DFFSMSize - 1, 0..DFFSMSize - 1] of integer;
+
+  {
+  0 = start
+  1 = read first char of direction
+  2 = read second char of direction
+  3 = reading length
+  4 = draw
+  5 = finish
+  }
+  TFSMState = (msStart, msFirstChar, msSecondChar, msNum, msDraw, msFinish);
+
+  TDetermFigureFSM = class
+  private
+    FCurState: TFSMState;
+    FCurNum: integer;
+    FCurChars: string;
+  public
+    constructor Create;
+  end;
 
   TLine = class
   private
@@ -20,13 +47,14 @@ type
     FSize: integer;
     FStartPoint: TPoint;
     FEndPoint: TPoint;
+    FColor: TColor;
   public
     property Direction: TDirection read FDirection;
     property Size: integer read FSize;
     property StartPoint: TPoint read FStartPoint;
     property EndPoint: TPoint read FEndPoint;
-    constructor Create(ABitmap: TBitmap; ADirection:
-      TDirection; ASize: integer; AStartPoint: TPoint);
+    constructor Create(ABitmap: TBitmap; ADirection: TDirection;
+      ASize: integer; AStartPoint: TPoint; AColor: TColor);
   end;
 
   TMainForm = class(TForm)
@@ -54,10 +82,26 @@ implementation
 
 { TMainForm }
 
-constructor TLine.Create(ABitmap: TBitmap; ADirection:
-  TDirection; ASize: integer; AStartPoint: TPoint);
+constructor TDetermFigureFSM.Create;
+var
+  i, j: integer;
 begin
+  FCurState := msStart;
+  FCurNum := 0;
+  FCurChars := '';
+end;
 
+constructor TLine.Create(ABitmap: TBitmap; ADirection: TDirection;
+  ASize: integer; AStartPoint: TPoint; AColor: TColor);
+begin
+  with ABitmap do begin
+    Canvas.Pen.Color := AColor;
+    if ADirection = dNone then
+      Canvas.Pen.Width := BoldLineWidth;
+
+
+    Canvas.Pen.Width := DefaultLineWidth;
+  end;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -71,6 +115,7 @@ begin
     Brush.Style := bsSolid;
     Pen.Color := clWhite;
     Pen.Style := psSolid;
+    Pen.Width := DefaultLineWidth;
   end;
   bmPicture.Canvas.Rectangle(0, 0, Width, Height);
 end;
@@ -91,8 +136,9 @@ procedure TMainForm.DrawFigure(APoint: TPoint; AColor: TColor; ASize: integer);
 var
   i: integer;
   CurChar: char;
+  CurDirection: TDirection;
 begin
-  bmPicture.Canvas.MoveTo(APoint);
+
 
 end;
 
