@@ -12,9 +12,9 @@ const
   DefaultLineWidth = 1;
   BoldLineWidth = 2;
   {DFFSM = Determ Figure Finite-State Machine}
-  DFFSMSize = 5;
   ValidDirectionChars: set of char = ['r', 'R', 'd', 'D', 'l', 'L', 'u', 'U'];
   ValidIntegers: set of char = ['0'..'9'];
+  ArrowChars: array [0..8] of string = ('', '', '', '', '', '', '', '', '');
 
 type
 
@@ -27,8 +27,7 @@ type
   1 = reading first char of direction
   2 = reading second char of direction
   3 = reading length
-  4 = draw
-  5 = finish
+  4 = finish
   }
   TFSMState = (msStart, msFirstChar, msSecondChar, msNum, msFinish);
 
@@ -60,8 +59,10 @@ type
   end;
 
   TMainForm = class(TForm)
+    pnlArrows: TPanel;
   public
     FSM: TDetermFigureFSM;
+    ArrowButtons: array [0..8] of TBitBtn;
   published
     cbColor: TColorButton;
     memoText: TMemo;
@@ -82,6 +83,8 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure pbPicturePaint(Sender: TObject);
     procedure DrawFigure(APoint: TPoint; AColor: TColor; AScale: integer);
+    procedure CreateArrowButtons(APanel: TPanel);
+    procedure ArrowButtonClick(Sender: TObject);
   end;
 
 var
@@ -140,10 +143,10 @@ begin
   {CurState = reading second char}
   if FCurState = msSecondChar then begin
     case FCurChars of
-      'rr': ADirection := dRight;
-      'dd': ADirection := dDown;
-      'll': ADirection := dLeft;
-      'uu': ADirection := dUp;
+      'rr', 'RR': ADirection := dRight;
+      'dd', 'DD': ADirection := dDown;
+      'll', 'LL': ADirection := dLeft;
+      'uu', 'UU': ADirection := dUp;
       'ru', 'rU', 'Ru', 'RU', 'ur', 'uR', 'Ur', 'UR': ADirection := dRightUp;
       'rd', 'rD', 'Rd', 'RD', 'dr', 'dR', 'Dr', 'DR': ADirection := dRightDown;
       'lu', 'lU', 'Lu', 'LU', 'ul', 'uL', 'Ul', 'UL': ADirection := dLeftUp;
@@ -248,6 +251,7 @@ begin
   end;
   bmPicture.Canvas.FillRect(0, 0, Width, Height);
   FSM := TDetermFigureFSM.Create;
+  CreateArrowButtons(pnlArrows);
 end;
 
 procedure TMainForm.pbPictureMouseDown(Sender: TObject; Button: TMouseButton;
@@ -256,7 +260,7 @@ var
   MemoString: string;
   i: integer;
 begin
-  for i := 0 to memoText.Lines.Count - 1 do begin;
+  for i := 0 to memoText.Lines.Count - 1 do begin
     MemoString := memoText.Lines[i];
     if (Length(MemoString) > 0) and (MemoString[Length(MemoString) - 1] <> ' ') then
       memoText.Lines[i] := MemoString + '  ';
@@ -293,6 +297,37 @@ begin
   end;
   with bmPicture do
     pbPicture.Canvas.CopyRect(Rect(0, 0, Width, Height), bmPicture.Canvas, Rect(0, 0, Width, Height));
+end;
+
+procedure TMainForm.CreateArrowButtons(APanel: TPanel);
+var
+  i, j, k: integer;
+  DefaultButtonHeight: integer;
+begin
+  DefaultButtonHeight := APanel.Height div 3;
+  for i := 0 to 2 do
+    for j := 0 to 2 do begin
+      k := i*3 + j;
+      ArrowButtons[k] := TBitBtn.Create(APanel);
+      with ArrowButtons[k] do begin
+        Parent := APanel;
+        Height := DefaultButtonHeight;
+        Width := Height;
+        Top := Height * i;
+        Left := Width * j;
+        Caption := ArrowChars[k];
+        OnClick := @ArrowButtonClick;
+      end;
+    end;
+end;
+
+procedure TMainForm.ArrowButtonClick(Sender: TObject);
+var
+  Button: TBitBtn;
+begin
+  Button := Sender as TBitBtn;
+  memoText.Lines.Text := memoText.Lines.Text + Button.Caption;
+  ActiveControl := memoText;
 end;
 
 end.

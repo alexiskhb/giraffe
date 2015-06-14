@@ -1,7 +1,7 @@
 object MainForm: TMainForm
-  Left = 394
+  Left = 460
   Height = 530
-  Top = 105
+  Top = 137
   Width = 598
   Caption = 'Жираф'
   ClientHeight = 530
@@ -11,18 +11,18 @@ object MainForm: TMainForm
   LCLVersion = '1.2.6.0'
   object pnlPicture: TPanel
     Left = 0
-    Height = 408
+    Height = 432
     Top = 0
     Width = 598
     Align = alClient
-    ClientHeight = 408
+    ClientHeight = 432
     ClientWidth = 598
     Color = clWhite
     ParentColor = False
     TabOrder = 0
     object pbPicture: TPaintBox
       Left = 1
-      Height = 406
+      Height = 430
       Top = 1
       Width = 596
       Align = alClient
@@ -34,20 +34,20 @@ object MainForm: TMainForm
   end
   object pnlText: TPanel
     Left = 0
-    Height = 122
-    Top = 408
+    Height = 98
+    Top = 432
     Width = 598
     Align = alBottom
-    ClientHeight = 122
+    ClientHeight = 98
     ClientWidth = 598
     TabOrder = 1
     object pnlColorSize: TPanel
       Left = 535
-      Height = 120
+      Height = 96
       Top = 1
       Width = 62
       Align = alRight
-      ClientHeight = 120
+      ClientHeight = 96
       ClientWidth = 62
       TabOrder = 0
       object cbColor: TColorButton
@@ -73,7 +73,7 @@ object MainForm: TMainForm
         Left = 8
         Height = 26
         Top = 64
-        Width = 49
+        Width = 25
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
           2000000000000004000064000000640000000000000000000000FFFFFF000095
@@ -116,7 +116,7 @@ object MainForm: TMainForm
       object bbSave: TBitBtn
         Left = 32
         Height = 26
-        Top = 90
+        Top = 64
         Width = 25
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
@@ -159,12 +159,20 @@ object MainForm: TMainForm
       end
     end
     object memoText: TMemo
-      Left = 1
-      Height = 120
+      Left = 97
+      Height = 96
       Top = 1
-      Width = 534
+      Width = 438
       Align = alClient
       TabOrder = 1
+    end
+    object pnlArrows: TPanel
+      Left = 1
+      Height = 96
+      Top = 1
+      Width = 96
+      Align = alLeft
+      TabOrder = 2
     end
   end
   object SaveDialog: TSaveDialog
