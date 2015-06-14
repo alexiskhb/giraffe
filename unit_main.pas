@@ -6,7 +6,7 @@ interface
 
 uses
   Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  Spin, StdCtrls;
+  Spin, StdCtrls, Buttons;
 
 const
   DefaultLineWidth = 1;
@@ -56,10 +56,13 @@ type
     property StartPoint: TPoint read FStartPoint;
     property EndPoint: TPoint read FEndPoint;
     constructor Create(ABitmap: TBitmap; ADirection: TDirection;
-      ALength: integer; AStartPoint: TPoint; AColor: TColor);
+      ALength, AScale: integer; APoint: TPoint; AColor: TColor);
   end;
 
   TMainForm = class(TForm)
+	    bbClear: TBitBtn;
+	    procedure bbClearClick(Sender: TObject);
+	    procedure FormResize(Sender: TObject);
   public
     FSM: TDetermFigureFSM;
   published
@@ -89,8 +92,6 @@ implementation
 
 function TDetermFigureFSM.Analyze(ANewChar: char; var ACurLength: integer;
   var ADirection: TDirection): boolean;
-var
-  NewState: TFSMState;
 begin
   Result := false;
   {CurState = reading num}
@@ -176,8 +177,6 @@ begin
 end;
 
 constructor TDetermFigureFSM.Create;
-var
-  i, j: integer;
 begin
   FCurState := msStart;
   FCurNum := 0;
@@ -185,19 +184,40 @@ begin
 end;
 
 constructor TLine.Create(ABitmap: TBitmap; ADirection: TDirection;
-  ALength: integer; AStartPoint: TPoint; AColor: TColor);
+  ALength, AScale: integer; APoint: TPoint; AColor: TColor);
+var
+  DirectLength: integer;
 begin
+  DirectLength := AScale * ALength * 2;
+  FStartPoint := APoint;
+  FColor := AColor;
+  case ADirection of
+    dRight: FEndPoint := Point(APoint.X + DirectLength, APoint.Y);
+    dDown: FEndPoint := Point(APoint.X, APoint.Y + DirectLength);
+    dLeft: FEndPoint := Point(APoint.X - DirectLength, APoint.Y);
+    dUp: FEndPoint := Point(APoint.X, APoint.Y - DirectLength);
+    else FEndPoint := APoint;
+  end;
   with ABitmap.Canvas do begin
-    Pen.Color := AColor;
     if ADirection = dNone then
       Pen.Width := BoldLineWidth;
-
-
-
-
-
+    Pen.Color := AColor;
+    MoveTo(FStartPoint);
+    LineTo(FEndPoint);
     Pen.Width := DefaultLineWidth;
   end;
+end;
+
+procedure TMainForm.bbClearClick(Sender: TObject);
+begin
+  bmPicture.Canvas.FillRect(0, 0, Width, Height);
+  pbPicture.Invalidate;
+end;
+
+procedure TMainForm.FormResize(Sender: TObject);
+begin
+  bmPicture.Width := MainForm.Width;
+  bmPicture.Height := MainForm.Height;
 end;
 
 procedure TMainForm.FormCreate(Sender: TObject);
@@ -213,13 +233,18 @@ begin
     Pen.Style := psSolid;
     Pen.Width := DefaultLineWidth;
   end;
-  bmPicture.Canvas.Rectangle(0, 0, Width, Height);
+  bmPicture.Canvas.FillRect(0, 0, Width, Height);
   FSM := TDetermFigureFSM.Create;
 end;
 
 procedure TMainForm.pbPictureMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
+var
+  LastMemoString: string;
 begin
+  LastMemoString := memoText.Lines[memoText.Lines.Count - 1];
+  if (Length(LastMemoString) > 0) and (LastMemoString[Length(LastMemoString) - 1] <> ' ') then
+    memoText.Lines.Text := memoText.Lines.Text + '  ';
   DrawFigure(Point(X, Y), cbColor.ButtonColor, spinSize.Value);
 end;
 
@@ -234,18 +259,24 @@ var
   i, j: integer;
   CurLength: integer;
   CurDirection: TDirection;
+  CurPoint: TPoint;
   CurMemoString: string;
   NewLine: TLine;
 begin
+  CurPoint := APoint;
+  CurDirection := dNone;
+  CurLength := 0;
   for i := 0 to memoText.Lines.Count - 1 do begin
     CurMemoString := memoText.Lines[i];
     for j := 0 to Length(CurMemoString) - 1 do begin
-      if FSM.Analyze(CurMemoString[j], CurLength, CurDirection) then
-        //NewLine := TLine.Create();
-
-
+      if FSM.Analyze(CurMemoString[j], CurLength, CurDirection) then begin
+        NewLine := TLine.Create(bmPicture, CurDirection, CurLength, AScale, CurPoint, AColor);
+        CurPoint := NewLine.EndPoint;
+      end;
     end;
   end;
+  with bmPicture do
+    pbPicture.Canvas.CopyRect(Rect(0, 0, Width, Height), bmPicture.Canvas, Rect(0, 0, Width, Height));
 end;
 
 end.
