@@ -14,8 +14,8 @@ const
   {DFFSM = Determ Figure Finite-State Machine}
   ValidDirectionChars: set of char = ['r', 'R', 'd', 'D', 'l', 'L', 'u', 'U', 'n', 'N'];
   ValidIntegers: set of char = ['0'..'9'];
-  ArrowChars: array [0..8] of string = ('', '', '', '', '', '', '', '', '');
-  ArrowTrueChars: array [0..8] of string = ('lu', 'u', 'ru', 'l', 'n', 'r', 'ld', 'd', 'rd');
+  ArrowChars: array [0..8] of string = ('↰', '↑', '↱', '←', '', '→', '↲', '↓', '↳');
+  ArrowTrueChars: array [0..8] of string = ('ul', 'u', 'ur', 'l', 'n', 'r', 'dl', 'd', 'dr');
 
 type
 
@@ -74,8 +74,8 @@ type
   end;
 
   TMainForm = class(TForm)
-	    btnHistory: TBitBtn;
-	    procedure btnHistoryClick(Sender: TObject);
+    btnHistory: TBitBtn;
+    procedure btnHistoryClick(Sender: TObject);
   public
     FSM: TDetermFigureFSM;
     ArrowButtons: array [0..8] of TBitBtn;
@@ -505,6 +505,7 @@ begin
         Caption := ArrowChars[k];
         Hint := ArrowTrueChars[k];
         ShowHint := true;
+        Font.Size := 12;
         OnClick := @ArrowButtonClick;
       end;
     end;

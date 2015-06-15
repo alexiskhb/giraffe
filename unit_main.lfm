@@ -52,28 +52,28 @@ object MainForm: TMainForm
       ClientWidth = 62
       TabOrder = 0
       object cbColor: TColorButton
-        Left = 8
+        Left = 5
         Height = 26
-        Top = 36
+        Top = 35
         Width = 25
         BorderWidth = 0
         ButtonColorSize = 16
         ButtonColor = clNavy
       end
       object spinSize: TSpinEdit
-        Left = 8
+        Left = 5
         Height = 26
-        Top = 8
-        Width = 49
+        Top = 5
+        Width = 52
         AutoSize = False
         MinValue = 1
         TabOrder = 0
         Value = 5
       end
       object bbClear: TBitBtn
-        Left = 8
+        Left = 5
         Height = 26
-        Top = 64
+        Top = 63
         Width = 25
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
@@ -117,7 +117,7 @@ object MainForm: TMainForm
       object bbSave: TBitBtn
         Left = 32
         Height = 26
-        Top = 64
+        Top = 63
         Width = 25
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
@@ -161,7 +161,7 @@ object MainForm: TMainForm
       object btnHistory: TBitBtn
         Left = 32
         Height = 26
-        Top = 36
+        Top = 35
         Width = 25
         Glyph.Data = {
           36040000424D3604000000000000360000002800000010000000100000000100
