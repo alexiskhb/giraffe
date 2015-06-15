@@ -519,12 +519,12 @@ var
 begin
   Button := Sender as TBitBtn;
   Direction := Button.Hint;
-  i := memoText.CaretY;
-  j := memoText.CaretX;
+  i := memoText.CaretY - 1;
+  j := memoText.CaretX - 1;
   MemoString := memoText.Lines[i];
   MemoString := Copy(MemoString, 1, j) + Direction + Copy(MemoString, j + 1, Length(MemoString));
   memoText.Lines[i] := MemoString;
-  memoText.CaretXY := Point(j + Length(Direction), i);
+  memoText.CaretXY := Point(j + Length(Direction) + 1, i + 1);
   ActiveControl := memoText;
 end;
 
