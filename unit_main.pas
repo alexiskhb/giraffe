@@ -61,6 +61,18 @@ type
       ALength, AScale: integer; APoint: TPoint; AColor: TColor);
   end;
 
+  TDot = class
+  private
+    FSize: integer;
+    FPoint: TPoint;
+    FColor: TColor;
+  public
+    property Size: integer read FSize;
+    property StartPoint: TPoint read FPoint;
+    constructor Create(ABitmap: TBitmap; AScale: integer;
+      APoint: TPoint; AColor: TColor);
+  end;
+
   TMainForm = class(TForm)
   public
     FSM: TDetermFigureFSM;
@@ -87,6 +99,7 @@ type
     procedure pbPicturePaint(Sender: TObject);
     procedure DrawFigure(APoint: TPoint; AColor: TColor;
       AScale: integer; IsNumFirst: boolean);
+    procedure DrawDot(APoint: TPoint; AColor: TColor; AScale: integer);
     procedure CreateArrowButtons(APanel: TPanel);
     procedure ArrowButtonClick(Sender: TObject);
   end;
@@ -326,6 +339,20 @@ begin
   end;
 end;
 
+constructor TDot.Create(ABitmap: TBitmap; AScale: integer;
+  APoint: TPoint; AColor: TColor);
+begin
+  FPoint := APoint;
+  FColor := AColor;
+  with ABitmap.Canvas do begin
+    Pen.Color := AColor;
+    Pen.Width := AScale;
+    MoveTo(FPoint);
+    LineTo(FPoint);
+    Pen.Width := DefaultLineWidth;
+  end;
+end;
+
 procedure TMainForm.bbClearClick(Sender: TObject);
 begin
   bmPicture.Canvas.FillRect(0, 0, Width, Height);
@@ -389,7 +416,11 @@ begin
   end;
 
   IsNumFirst := (j < Length(MemoString)) and (MemoString[j] in ValidIntegers);
-  DrawFigure(Point(X, Y), cbColor.ButtonColor, spinSize.Value, IsNumFirst);
+  if Button = mbLeft then
+    DrawFigure(Point(X, Y), cbColor.ButtonColor, spinSize.Value, IsNumFirst)
+  else begin
+    DrawDot(Point(X, Y), cbColor.ButtonColor, spinSize.Value);
+  end;
 end;
 
 procedure TMainForm.pbPicturePaint(Sender: TObject);
@@ -411,6 +442,7 @@ begin
   CurPoint := APoint;
   CurDirection := dNone;
   CurLength := 0;
+  NewLine := nil;
   for i := 0 to memoText.Lines.Count - 1 do begin
     CurMemoString := memoText.Lines[i];
     for j := 0 to Length(CurMemoString) - 1 do begin
@@ -418,17 +450,28 @@ begin
         if FSM.AnalyzeNumFirst(CurMemoString[j], CurLength, CurDirection) then begin
           NewLine := TLine.Create(bmPicture, CurDirection, CurLength, AScale, CurPoint, AColor);
           CurPoint := NewLine.EndPoint;
+          FreeAndNil(NewLine);
         end;
       end
       else
         if FSM.Analyze(CurMemoString[j], CurLength, CurDirection) then begin
           NewLine := TLine.Create(bmPicture, CurDirection, CurLength, AScale, CurPoint, AColor);
           CurPoint := NewLine.EndPoint;
+          FreeAndNil(NewLine);
         end;
     end;
   end;
   with bmPicture do
     pbPicture.Canvas.CopyRect(Rect(0, 0, Width, Height), bmPicture.Canvas, Rect(0, 0, Width, Height));
+end;
+
+procedure TMainForm.DrawDot(APoint: TPoint; AColor: TColor; AScale: integer);
+var
+  Dot: TDot;
+begin
+  Dot := TDot.Create(bmPicture, AScale, APoint, AColor);
+  pbPicture.Invalidate;
+  FreeAndNil(Dot);
 end;
 
 procedure TMainForm.CreateArrowButtons(APanel: TPanel);
