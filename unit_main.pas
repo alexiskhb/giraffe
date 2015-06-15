@@ -194,11 +194,19 @@ begin
       FCurNum := FCurNum*10 + StrToInt(ANewChar);
       exit(false);
     end
+    else
+    if ANewChar in ValidDirectionChars then begin
+      FCurChars := ANewChar;
+      FCurState := msFirstChar;
+      ACurLength := FCurNum;
+      FCurNum := 0;
+      exit(false);
+    end
     else begin
       FCurState := msStart;
       ACurLength := FCurNum;
       FCurNum := 0;
-      exit(true);
+      exit(false);
     end;
 
   {CurState = reading first char}
@@ -219,12 +227,12 @@ begin
       FCurNum := StrToInt(ANewChar);
       FCurState := msNum;
       FCurChars := '';
-      exit(false);
+      exit(true);
     end
     else begin
       FCurState := msStart;
       FCurChars := '';
-      exit(false);
+      exit(true);
     end;
   end;
 
@@ -245,12 +253,12 @@ begin
       FCurState := msNum;
       FCurNum := StrToInt(ANewChar);
       FCurChars := '';
-      exit(false);
+      exit(true);
     end
     else begin
       FCurState := msStart;
       FCurChars := '';
-      exit(false);
+      exit(true);
     end;
   end;
 
@@ -377,7 +385,7 @@ begin
   for i := 0 to memoText.Lines.Count - 1 do begin
     CurMemoString := memoText.Lines[i];
     for j := 0 to Length(CurMemoString) - 1 do begin
-      if FSM.Analyze(CurMemoString[j], CurLength, CurDirection) then begin
+      if FSM.AnalyzeNumFirst(CurMemoString[j], CurLength, CurDirection) then begin
         NewLine := TLine.Create(bmPicture, CurDirection, CurLength, AScale, CurPoint, AColor);
         CurPoint := NewLine.EndPoint;
       end;
