@@ -61,11 +61,11 @@ type
   end;
 
   TMainForm = class(TForm)
-    pnlArrows: TPanel;
   public
     FSM: TDetermFigureFSM;
     ArrowButtons: array [0..8] of TBitBtn;
   published
+    pnlArrows: TPanel;
     cbColor: TColorButton;
     memoText: TMemo;
     pbPicture: TPaintBox;
@@ -84,7 +84,8 @@ type
     procedure pbPictureMouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure pbPicturePaint(Sender: TObject);
-    procedure DrawFigure(APoint: TPoint; AColor: TColor; AScale: integer);
+    procedure DrawFigure(APoint: TPoint; AColor: TColor;
+      AScale: integer; IsNumFirst: boolean);
     procedure CreateArrowButtons(APanel: TPanel);
     procedure ArrowButtonClick(Sender: TObject);
   end;
@@ -354,14 +355,30 @@ procedure TMainForm.pbPictureMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 var
   MemoString: string;
-  i: integer;
+  i, j: integer;
+  IsNumFirst: boolean;
 begin
   for i := 0 to memoText.Lines.Count - 1 do begin
     MemoString := memoText.Lines[i];
     if (Length(MemoString) > 0) and (MemoString[Length(MemoString) - 1] <> ' ') then
       memoText.Lines[i] := MemoString + '  ';
   end;
-  DrawFigure(Point(X, Y), cbColor.ButtonColor, spinSize.Value);
+
+  i := 0;
+  j := 0;
+  MemoString := '#';
+  while (j < Length(MemoString)) and not ((MemoString[j] in ValidDirectionChars) or (MemoString[j] in ValidIntegers)) do begin
+    MemoString := memoText.Lines[i];
+    while (j < Length(MemoString)) and not ((MemoString[j] in ValidDirectionChars) or (MemoString[j] in ValidIntegers)) do begin
+      inc(j);
+      if j >= Length(MemoString) then break;
+    end;
+    inc(i);
+    if (i = memoText.Lines.Count) and (j = Length(MemoString)) then break;
+  end;
+
+  IsNumFirst := (j < Length(MemoString)) and (MemoString[j] in ValidIntegers);
+  DrawFigure(Point(X, Y), cbColor.ButtonColor, spinSize.Value, IsNumFirst);
 end;
 
 procedure TMainForm.pbPicturePaint(Sender: TObject);
@@ -370,7 +387,8 @@ begin
     pbPicture.Canvas.CopyRect(Rect(0, 0, Width, Height), bmPicture.Canvas, Rect(0, 0, Width, Height));
 end;
 
-procedure TMainForm.DrawFigure(APoint: TPoint; AColor: TColor; AScale: integer);
+procedure TMainForm.DrawFigure(APoint: TPoint; AColor: TColor;
+  AScale: integer; IsNumFirst: boolean);
 var
   i, j: integer;
   CurLength: integer;
@@ -385,10 +403,17 @@ begin
   for i := 0 to memoText.Lines.Count - 1 do begin
     CurMemoString := memoText.Lines[i];
     for j := 0 to Length(CurMemoString) - 1 do begin
-      if FSM.AnalyzeNumFirst(CurMemoString[j], CurLength, CurDirection) then begin
-        NewLine := TLine.Create(bmPicture, CurDirection, CurLength, AScale, CurPoint, AColor);
-        CurPoint := NewLine.EndPoint;
-      end;
+      if IsNumFirst then begin
+        if FSM.AnalyzeNumFirst(CurMemoString[j], CurLength, CurDirection) then begin
+          NewLine := TLine.Create(bmPicture, CurDirection, CurLength, AScale, CurPoint, AColor);
+          CurPoint := NewLine.EndPoint;
+        end;
+      end
+      else
+        if FSM.Analyze(CurMemoString[j], CurLength, CurDirection) then begin
+          NewLine := TLine.Create(bmPicture, CurDirection, CurLength, AScale, CurPoint, AColor);
+          CurPoint := NewLine.EndPoint;
+        end;
     end;
   end;
   with bmPicture do
