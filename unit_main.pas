@@ -10,11 +10,12 @@ uses
 
 const
   DefaultLineWidth = 1;
-  BoldLineWidth = 2;
+  BoldLineWidth = 3;
   {DFFSM = Determ Figure Finite-State Machine}
-  ValidDirectionChars: set of char = ['r', 'R', 'd', 'D', 'l', 'L', 'u', 'U'];
+  ValidDirectionChars: set of char = ['r', 'R', 'd', 'D', 'l', 'L', 'u', 'U', 'n', 'N'];
   ValidIntegers: set of char = ['0'..'9'];
   ArrowChars: array [0..8] of string = ('', '', '', '', '', '', '', '', '');
+  ArrowTrueChars: array [0..8] of string = ('lu', 'u', 'ru', 'l', 'n', 'r', 'ld', 'd', 'rd');
 
 type
 
@@ -109,6 +110,14 @@ begin
       FCurNum := FCurNum*10 + StrToInt(ANewChar);
       exit(false);
     end
+    else
+    if ANewChar in ValidDirectionChars then begin
+      FCurState := msFirstChar;
+      FCurChars := ANewChar;
+      ACurLength := FCurNum;
+      FCurNum := 0;
+      exit(true);
+    end
     else begin
       FCurState := msStart;
       ACurLength := FCurNum;
@@ -123,6 +132,7 @@ begin
         'd', 'D': ADirection := dDown;
         'l', 'L': ADirection := dLeft;
         'u', 'U': ADirection := dUp;
+        'n', 'N': ADirection := dNone;
     end;
     if ANewChar in ValidDirectionChars then begin
       FCurChars := FCurChars + ANewChar;
@@ -217,6 +227,7 @@ begin
         'd', 'D': ADirection := dDown;
         'l', 'L': ADirection := dLeft;
         'u', 'U': ADirection := dUp;
+        'n', 'N': ADirection := dNone;
     end;
     if ANewChar in ValidDirectionChars then begin
       FCurChars := FCurChars + ANewChar;
@@ -437,6 +448,8 @@ begin
         Top := Height * i;
         Left := Width * j;
         Caption := ArrowChars[k];
+        Hint := ArrowTrueChars[k];
+        ShowHint := true;
         OnClick := @ArrowButtonClick;
       end;
     end;
@@ -445,9 +458,18 @@ end;
 procedure TMainForm.ArrowButtonClick(Sender: TObject);
 var
   Button: TBitBtn;
+  i, j: integer;
+  MemoString: string;
+  Direction: string;
 begin
   Button := Sender as TBitBtn;
-  memoText.Lines.Text := memoText.Lines.Text + Button.Caption;
+  Direction := Button.Hint;
+  i := memoText.CaretPos.Y;
+  j := memoText.CaretPos.X;
+  MemoString := memoText.Lines[i];
+  MemoString := Copy(MemoString, 1, j) + Direction + Copy(MemoString, j + 1, Length(MemoString));
+  memoText.Lines[i] := MemoString;
+  memoText.CaretPos := Point(j + Length(Direction), i);
   ActiveControl := memoText;
 end;
 
