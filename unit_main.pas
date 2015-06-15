@@ -5,8 +5,8 @@ unit unit_main;
 interface
 
 uses
-  Classes, SysUtils, FileUtil, Forms, Controls, Graphics, Dialogs, ExtCtrls,
-  Spin, StdCtrls, Buttons, Menus;
+  Classes, SysUtils, FileUtil, SynEdit, SynMemo, Forms, Controls, Graphics,
+  Dialogs, ExtCtrls, Spin, StdCtrls, Buttons, Menus, unit_history;
 
 const
   DefaultLineWidth = 1;
@@ -74,13 +74,15 @@ type
   end;
 
   TMainForm = class(TForm)
+	    btnHistory: TBitBtn;
+	    procedure btnHistoryClick(Sender: TObject);
   public
     FSM: TDetermFigureFSM;
     ArrowButtons: array [0..8] of TBitBtn;
   published
+    memoText: TSynEdit;
     pnlArrows: TPanel;
     cbColor: TColorButton;
-    memoText: TMemo;
     pbPicture: TPaintBox;
     pnlPicture: TPanel;
     pnlText: TPanel;
@@ -346,11 +348,16 @@ begin
   FColor := AColor;
   with ABitmap.Canvas do begin
     Pen.Color := AColor;
-    Pen.Width := AScale;
+    Pen.Width := AScale div 2;
     MoveTo(FPoint);
     LineTo(FPoint);
     Pen.Width := DefaultLineWidth;
   end;
+end;
+
+procedure TMainForm.btnHistoryClick(Sender: TObject);
+begin
+  HistoryForm.Show;
 end;
 
 procedure TMainForm.bbClearClick(Sender: TObject);
@@ -416,8 +423,13 @@ begin
   end;
 
   IsNumFirst := (j < Length(MemoString)) and (MemoString[j] in ValidIntegers);
-  if Button = mbLeft then
-    DrawFigure(Point(X, Y), cbColor.ButtonColor, spinSize.Value, IsNumFirst)
+  if Button = mbLeft then begin
+    DrawFigure(Point(X, Y), cbColor.ButtonColor, spinSize.Value, IsNumFirst);
+    with HistoryForm.memoHistory do begin
+      Text := Text + memoText.Text;
+      Lines.Append('');
+    end;
+  end
   else begin
     DrawDot(Point(X, Y), cbColor.ButtonColor, spinSize.Value);
   end;
@@ -507,12 +519,12 @@ var
 begin
   Button := Sender as TBitBtn;
   Direction := Button.Hint;
-  i := memoText.CaretPos.Y;
-  j := memoText.CaretPos.X;
+  i := memoText.CaretY;
+  j := memoText.CaretX;
   MemoString := memoText.Lines[i];
   MemoString := Copy(MemoString, 1, j) + Direction + Copy(MemoString, j + 1, Length(MemoString));
   memoText.Lines[i] := MemoString;
-  memoText.CaretPos := Point(j + Length(Direction), i);
+  memoText.CaretXY := Point(j + Length(Direction), i);
   ActiveControl := memoText;
 end;
 
